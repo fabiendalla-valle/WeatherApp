@@ -283,7 +283,7 @@ class SliderState extends State<SliderItem>{
 }
 
 //List of possible days (possibility of adding days up to 16)
-final List<int> listDays = <int>[1,3,7,10,14];
+final List<int> listDays = <int>[1,3,7,10,16];
 
 //TEST
 //Unuse
