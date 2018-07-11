@@ -22,10 +22,10 @@ class WeatherRepo{
   //Default settings
 
   int day=3;
-  String city = "";
-  String country = "";
-  String lat = "";
-  String lon = "";
+  String city;
+  String country;
+  String lat;
+  String lon;
   bool fahrenheit = false;
   bool firstTime = true;
 
@@ -34,31 +34,37 @@ class WeatherRepo{
   //updates user input parameters
 
   Future<void> updateDay(int count){
+    print("day change");
     day=count;
     return null;
   }
 
   Future<void> updateCity(String str){
+    print("city change");
     city=str;
     return null;
   }
 
   Future<void> updateCountry(String str){
+    print("country change");
     country=str;
     return null;
   }
 
   Future<void> updateLat(String str){
+    print("lat change");
     lat=str;
     return null;
   }
 
   Future<void> updateLon(String str){
+    print("lon change");
     lon=str;
     return null;
   }
 
   Future<void> updateFahrenheit(bool test){
+    print("unit change");
     fahrenheit=!fahrenheit;
     return null;
   }
@@ -71,20 +77,32 @@ class WeatherRepo{
     List<WeatherModel> req;
 
     //We check that this is not the first time we run update weather to avoid having data when we launch the application
-
-    if(!firstTime){
-
+    print("start update weather");
+    print("city $city");
+    print("country $country");
       //Set up to know how the user wants to search the weather
-      if ((city != "") && (country != "")) {
+      if ((city != null) && (country != null)) {
 
         //search by city
+        print("search by city, $city, $country, $day");
         url = 'http://api.openweathermap.org/data/2.5/forecast?q=$city,$country&cnt=$day&APPID=cd276716fd9cc04be3e53bac3b30af26';
-      } else {
-
+        city=null;
+        country=null;
+      } else{
+        if ((lat != null) && (lon != null)) {
         //search by coordinates
+        print("search by coordinates, $lat, $lon, $day");
         url = 'http://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$lon&cnt=$day&APPID=cd276716fd9cc04be3e53bac3b30af26';
+        lat=null;
+        lon=null;
+        }else{
+          //default research
+          req=null;
+          return req;
+        }
       }
 
+      
       final response = await client.get(url);
 
       req = BaseResponse
@@ -104,11 +122,7 @@ class WeatherRepo{
           req[i].temperature = (req[i].temperature - 32)*(5 / 9);
         }
       }
-
-    }else{
-       firstTime=false;
-       req = null;
-    }
+    
     return req;
   }
 

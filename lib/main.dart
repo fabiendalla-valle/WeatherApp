@@ -12,6 +12,8 @@ import 'package:weather_app/model/model_provider.dart';
 import 'package:rx_widgets/rx_widgets.dart';
 import 'package:http/http.dart' as http;
 
+const _padding = EdgeInsets.all(12.0);
+
 void main() {
   final repo = WeatherRepo(client: http.Client());
   final modelCommand = ModelCommand(repo);
@@ -39,7 +41,7 @@ class MyApp extends StatelessWidget {
         // "hot reload" (press "r" in the console where you ran "flutter run",
         // or press Run > Flutter Hot Reload in IntelliJ). Notice that the
         // counter didn't reset back to zero; the application is not restarted.
-        primarySwatch: Colors.deepOrange,
+        primarySwatch: Colors.blue,
 
       ),
       home: new MyHomePage(title: 'Weather Home Page'),
@@ -65,6 +67,40 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => new _MyHomePageState();
 }
 class _MyHomePageState extends State<MyHomePage> {
+
+  void _navigateToWeather(BuildContext context){
+    ModelProvider.of(context).updateWeatherCommand.call();
+    print("start lunch second screen");
+    Navigator.of(context).push(MaterialPageRoute<Null>(
+      builder: (BuildContext context) {
+        return new Scaffold(
+          appBar: AppBar(
+            elevation: 1.0,
+            title: Text(
+              'name',
+              style: Theme.of(context).textTheme.display1,
+            ),
+            centerTitle: true,
+            backgroundColor: Colors.blueGrey,
+          ),
+          body: Column(
+            children:<Widget>[
+                Expanded(
+                child: RxLoader<List<WeatherModel>>(
+                  radius: 30.0,
+                  commandResults: ModelProvider.of(context).updateWeatherCommand,
+                  dataBuilder: (context,data)=>WeatherList(data),
+                  placeHolderBuilder: (context)=>Center(child: Text("Please enter a city name and a country code")),
+                  //errorBuilder: (context,exception)=>Center(child: Text("Please complete fields")),
+                  errorBuilder: (context,exception)=>Center(child: Text("$exception")),
+                ),
+              ),
+            ],
+          ),
+          );
+      },
+));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,11 +135,14 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       resizeToAvoidBottomPadding: false,
       body: Column(
+        
         children: <Widget>[
 
-            new TextFormField(
+            new Padding(
+              padding: _padding,
+              child: TextFormField(
               decoration: new InputDecoration(
-              fillColor: Colors.orange,
+              fillColor: Colors.blue[200],
               filled: true,
               contentPadding: new EdgeInsets.fromLTRB(
                   10.0, 30.0, 10.0, 10.0),
@@ -115,11 +154,14 @@ class _MyHomePageState extends State<MyHomePage> {
               onFieldSubmitted: (String str){
                 ModelProvider.of(context).addCityCommand(str);
               },
+            )
             ),
 
-            new TextFormField(
+            new Padding(
+              padding: _padding,
+              child: TextFormField(
               decoration: new InputDecoration(
-                  fillColor: Colors.orange,
+                  fillColor: Colors.blue[200],
                   filled: true,
                   contentPadding: new EdgeInsets.fromLTRB(
                       10.0, 30.0, 10.0, 10.0),
@@ -129,12 +171,43 @@ class _MyHomePageState extends State<MyHomePage> {
                   labelText: 'Country Code'),
               onFieldSubmitted: (String str){
                 ModelProvider.of(context).addCountryCommand(str);
-              },
+                              },
+            )
             ),
 
-            new TextFormField(
+            new Center(
+          
+                    child: WidgetSelector(
+                    buildEvents: ModelProvider
+                        .of(context)
+                        .updateLocationCommand
+                        .canExecute,
+                    onTrue: MaterialButton(
+                      color: Colors.blue,
+                      textColor: Colors.white,
+                      child: Icon(Icons.search,size: 40.0),
+                      onPressed:(){
+                        _navigateToWeather(context);
+                      }  
+
+                    ),
+                    onFalse: MaterialButton(
+                      color: Colors.grey,
+                      child: Text("Loading"),
+                      onPressed: null,
+                    ),
+                  ),
+                  
+                    ),
+
+            
+
+            new Padding(
+              padding: _padding,
+              child:TextField(
+              keyboardType: TextInputType.number,
               decoration: new InputDecoration(
-                  fillColor: Colors.orangeAccent,
+                  fillColor: Colors.blue[100],
                   filled: true,
                   contentPadding: new EdgeInsets.fromLTRB(
                       10.0, 30.0, 10.0, 10.0),
@@ -142,14 +215,18 @@ class _MyHomePageState extends State<MyHomePage> {
                     borderRadius: new BorderRadius.circular(12.0),
                   ),
                   labelText: 'Latitude'),
-              onFieldSubmitted: (String str){
+              onChanged: (String str){
               ModelProvider.of(context).addLatCommand(str);
               },
+            )
             ),
 
-            new TextFormField(
+            new Padding(
+              padding: _padding,
+              child:TextField(
+              keyboardType: TextInputType.number,
               decoration: new InputDecoration(
-                  fillColor: Colors.orangeAccent,
+                  fillColor: Colors.blue[100],
                   filled: true,
                   contentPadding: new EdgeInsets.fromLTRB(
                       10.0, 30.0, 10.0, 10.0),
@@ -159,23 +236,59 @@ class _MyHomePageState extends State<MyHomePage> {
                   labelText: 'Longitude'
 
               ),
-              onFieldSubmitted: (String str){
+              onChanged: (String str){
                 ModelProvider.of(context).addLonCommand(str);
-              },
+              }
+            )
             ),
 
+            new Center(
+                    child: WidgetSelector(
+                    buildEvents: ModelProvider.of(context).updateLocationCommand.canExecute,
+                    onTrue: MaterialButton(
+                      color: Colors.blue,
+                      textColor: Colors.white,
+                      child: Icon(Icons.search,size: 40.0),
+                      onPressed:(){
+                        _navigateToWeather(context);
+                      }
+                    ),
+                    onFalse: MaterialButton(
+                      color: Colors.grey,
+                      child: Text("Loading"),
+                      onPressed: null,
+                    ),
+                  ),
+                  
+                    ),
+            
+
+            Center(
+                    child:Column(
+                      children: <Widget>[
+                        SliderItem(true,ModelProvider.of(context).radioCheckedCommand
+                        ),
+                        Container(
+                          padding: EdgeInsets.all(10.0),
+                          child:  Text(" F° / C°"),
+                        )
+                      ],
+                    )
+                ),
+/*
           Expanded(
             child: RxLoader<List<WeatherModel>>(
               radius: 30.0,
               commandResults: ModelProvider.of(context).updateWeatherCommand,
               dataBuilder: (context,data)=>WeatherList(data),
               placeHolderBuilder: (context)=>Center(child: Text("Please enter a city name and a country code")),
-              errorBuilder: (context,exception)=>Center(child: Text("Please complete fields")),
+              //errorBuilder: (context,exception)=>Center(child: Text("Please complete fields")),
 
-              //errorBuilder: (context,exception)=>Center(child: Text("$exception")),
+              errorBuilder: (context,exception)=>Center(child: Text("$exception")),
             ),
           ),
-
+         */ 
+/*
           Container(
             padding: EdgeInsets.all(10.0),
             child: Row(
@@ -190,8 +303,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     onTrue: MaterialButton(
                       color: Colors.deepOrange,
                       textColor: Colors.white,
-                      child: Text("Search",
-                      ),
+                      child: Icon(Icons.search,size: 40.0),
                       onPressed: ModelProvider.of(context).updateWeatherCommand,
 
                     ),
@@ -220,6 +332,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           )
+          */
         ],
       ),
     );
@@ -283,7 +396,7 @@ class SliderState extends State<SliderItem>{
 }
 
 //List of possible days (possibility of adding days up to 16)
-final List<int> listDays = <int>[1,3,7,10,16];
+final List<int> listDays = <int>[1,3,7,10,14];
 
 //TEST
 //Unuse

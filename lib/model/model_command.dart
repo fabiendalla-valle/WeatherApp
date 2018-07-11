@@ -47,23 +47,21 @@ class ModelCommand{
     final _addCountryCommand = RxCommand.createAsync3<String,void>(repo.updateCountry);
     final _addLatCommand = RxCommand.createAsync3<String,void>(repo.updateLat);
     final _addLonCommand = RxCommand.createAsync3<String,void>(repo.updateLon);
-
+    /*
     _updateLocationCommand.results.listen((data)=> _updateWeatherCommand(data));
     _updateWeatherCommand(null);
-
-
-
+    */
     return ModelCommand._(
     repo,
     _updateLocationCommand,
     _updateWeatherCommand,
     _getGpsCommand,
     _radioCheckedCommand,
-        _addDayCommand,
-        _addCityCommand,
-        _addCountryCommand,
-        _addLatCommand,
-        _addLonCommand
+    _addDayCommand,
+    _addCityCommand,
+    _addCountryCommand,
+    _addLatCommand,
+    _addLonCommand
     );
 
   }
