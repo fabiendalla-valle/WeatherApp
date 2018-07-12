@@ -78,29 +78,18 @@ class WeatherRepo{
 
     //We check that this is not the first time we run update weather to avoid having data when we launch the application
     print("start update weather");
-    print("city $city");
-    print("country $country");
       //Set up to know how the user wants to search the weather
       if ((city != null) && (country != null)) {
 
         //search by city
         print("search by city, $city, $country, $day");
         url = 'http://api.openweathermap.org/data/2.5/forecast?q=$city,$country&cnt=$day&APPID=cd276716fd9cc04be3e53bac3b30af26';
-        city=null;
-        country=null;
+
       } else{
-        if ((lat != null) && (lon != null)) {
-        //search by coordinates
-        print("search by coordinates, $lat, $lon, $day");
-        url = 'http://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$lon&cnt=$day&APPID=cd276716fd9cc04be3e53bac3b30af26';
-        lat=null;
-        lon=null;
-        }else{
           //default research
           req=null;
           return req;
         }
-      }
 
       
       final response = await client.get(url);
@@ -123,6 +112,45 @@ class WeatherRepo{
         }
       }
     
+    return req;
+  }
+
+  Future<List<WeatherModel>> updateWeatherCoords(LocationResult result) async{
+
+    String url;
+    List<WeatherModel> req;
+
+    //We check that this is not the first time we run update weather to avoid having data when we launch the application
+    print("start update weather coords");
+
+      //Set up to know how the user wants to search the weather
+
+      if ((lat != null) && (lon != null)) {
+      //search by coordinates
+      print("search by coordinates, $lat, $lon, $day");
+      url = 'http://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$lon&cnt=$day&APPID=cd276716fd9cc04be3e53bac3b30af26';
+      }else{
+        //default research
+        req=null;
+        return req;
+      }
+
+      final response = await client.get(url);
+
+      req = BaseResponse
+          .fromJson(json.decode(response.body))
+      //.cities
+          .jours
+          .map((jour) => WeatherModel.fromResponse(jour))
+          .toList();
+      //Unit change based on radioButton
+      if (!fahrenheit) {
+        //If the boolean fahrenheit is zero, Convert to degree for all items in the list
+        for (int i = 0; i < req.length; i++) {
+
+          req[i].temperature = (req[i].temperature - 32)*(5 / 9);
+        }
+      }
     return req;
   }
 

@@ -16,6 +16,10 @@ class ModelCommand{
 
   final RxCommand<Null,LocationResult> updateLocationCommand;
   final RxCommand<LocationResult, List<WeatherModel>> updateWeatherCommand;
+
+  final RxCommand<LocationResult, List<WeatherModel>> updateWeatherCommandCoords;
+
+
   final RxCommand<Null,bool> getGpsCommand;
 
   final RxCommand<bool,void> radioCheckedCommand;
@@ -28,7 +32,7 @@ class ModelCommand{
 
 
   ModelCommand._(this.weatherRepo, this.updateLocationCommand,
-      this.updateWeatherCommand, this.getGpsCommand, this.radioCheckedCommand,
+      this.updateWeatherCommand,this.updateWeatherCommandCoords, this.getGpsCommand, this.radioCheckedCommand,
       this.addDayCommand, this.addCityCommand, this.addCountryCommand,
       this.addLatCommand, this.addLonCommand);
 
@@ -41,6 +45,7 @@ class ModelCommand{
     final _updateLocationCommand=RxCommand.createAsync2<LocationResult>(repo.updateLocation);
 
     final _updateWeatherCommand = RxCommand.createAsync3<LocationResult,List<WeatherModel>>(repo.updateWeather);
+    final _updateWeatherCommandCoords = RxCommand.createAsync3<LocationResult,List<WeatherModel>>(repo.updateWeatherCoords);
 
     final _addDayCommand = RxCommand.createAsync3<int,void>(repo.updateDay);
     final _addCityCommand = RxCommand.createAsync3<String,void>(repo.updateCity);
@@ -55,6 +60,7 @@ class ModelCommand{
     repo,
     _updateLocationCommand,
     _updateWeatherCommand,
+    _updateWeatherCommandCoords,
     _getGpsCommand,
     _radioCheckedCommand,
     _addDayCommand,
