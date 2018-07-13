@@ -1,20 +1,22 @@
-# weather_app
+# Weather Application
 
-Author : F DALLA-VALLE
+*Author : F DALLA-VALLE*
 
+You can search the weather with the name of the city, or with coordinates. 
+You can choose degrees Celsius or degrees Fahrenheit for your results, and also the number of days you want.
 
-TODO :
-_ Select the language of the results
-_ Add a list of previous searches
+## Display
+<img src='HomePage.png' width='350'>
+<img src='ResultScreen.png' width='350'>
 
-IMPROVEMENTS :
-_ Add animations
-_ Change the layout of the input and response fields (set up on several screens ...)
-_ Weather by geolocation
+## IMPROVEMENTS :
+* Weather by geolocation
+* Add a list of previous searches
+* Select the language of the results
+* Add animations
 
-Sources :   https://flutter.io/
-            Tensor Programming (Weather App)
-            API : https://openweathermap.org/api
-
-For help getting started with Flutter, view our online
-[documentation](https://flutter.io/).
+## Sources :
+* https://flutter.io/
+* Tensor Programming (Weather App)
+* https://classroom.udacity.com
+* API : https://openweathermap.org/api

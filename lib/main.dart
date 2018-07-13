@@ -79,6 +79,7 @@ class MyHomePage extends StatefulWidget {
 }
 class _MyHomePageState extends State<MyHomePage> {
 
+  //Second screen for city search result
   void _navigateToWeather(BuildContext context){
     ModelProvider.of(context).updateWeatherCommand.call();
     Navigator.of(context).push(MaterialPageRoute<Null>(
@@ -120,6 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ));
   }
 
+//Second screen for coordinates search result
 void _navigateToWeatherCoords(BuildContext context){
     ModelProvider.of(context).updateWeatherCommandCoords.call();
     print("avant affichage $_titleCoords");
@@ -158,12 +160,12 @@ void _navigateToWeatherCoords(BuildContext context){
           ),
           );
       },
-));
-  }
+  ));
+}
 
   @override
   Widget build(BuildContext context) {
-
+    //Home page
     return new Scaffold(
 
       appBar: new AppBar(
@@ -194,11 +196,14 @@ void _navigateToWeatherCoords(BuildContext context){
         ],
       ),
       resizeToAvoidBottomPadding: false,
+
       body: Container(
         color: _backgroundColor,
         child: Column(
         
         children: <Widget>[
+
+          //City search group
           new Padding(
           padding: EdgeInsets.all(20.0),
           child : Column(
@@ -274,6 +279,7 @@ void _navigateToWeatherCoords(BuildContext context){
           ),
         ),
 
+        //Coordinate search group
         new Padding(
           padding: EdgeInsets.all(20.0),
             child : Column(
@@ -345,27 +351,27 @@ void _navigateToWeatherCoords(BuildContext context){
         ),
         ),    
             
-        
-            Padding(
-              padding: EdgeInsets.all(20.0) ,
-              child: Center(
-                    child:Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.all(7.0),
-                          child:  Text("  F° ", style: TextStyle(color: Colors.lightBlue[900],fontSize: 30.0,),),
-                        ),
-                        SliderItem(true,ModelProvider.of(context).radioCheckedCommand
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(5.0),
-                          child:  Text("  C° ", style: TextStyle(color: Colors.blue[900],fontSize: 30.0,),),
-                        )
-                      ],
+        //Unit group
+        Padding(
+          padding: EdgeInsets.all(20.0) ,
+          child: Center(
+                child:Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.all(7.0),
+                      child:  Text("  F° ", style: TextStyle(color: Colors.lightBlue[900],fontSize: 30.0,),),
+                    ),
+                    SliderItem(true,ModelProvider.of(context).radioCheckedCommand
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(5.0),
+                      child:  Text("  C° ", style: TextStyle(color: Colors.blue[900],fontSize: 30.0,),),
                     )
-                ),
-            )
+                  ],
+                )
+            ),
+        )
         ],
       ),
       )
@@ -373,7 +379,7 @@ void _navigateToWeatherCoords(BuildContext context){
   }
 }
 
-//Class that contains the display settings
+//Class that contains the display settings for the result screen
 class WeatherList extends StatelessWidget{
   final List<WeatherModel> list;
   WeatherList(this.list);

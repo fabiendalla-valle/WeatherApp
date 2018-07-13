@@ -31,7 +31,7 @@ class WeatherRepo{
 
   WeatherRepo({this.client});
 
-  //updates user input parameters
+  //Updates user input parameters
 
   Future<void> updateDay(int count){
     print("day change");
