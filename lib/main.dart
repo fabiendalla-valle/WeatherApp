@@ -3,7 +3,8 @@
  * Author : F. DALLA-VALLE
  * file : main.dart
  */
-
+// This line imports the extension
+import 'package:flutter_driver/driver_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:weather_app/model/weather_repo.dart';
 import 'package:weather_app/model/model_command.dart';
@@ -12,22 +13,28 @@ import 'package:weather_app/model/model_provider.dart';
 import 'package:rx_widgets/rx_widgets.dart';
 import 'package:http/http.dart' as http;
 
-const _padding = EdgeInsets.all(12.0);
 String _title="";
 String _titleCoords="";
 String _city="";
 String _country="";
 String _lat="";
 String _lon="";
+
+//SHORTCUT TO CHANGE PARAMETERS EASILY
+const _padding = EdgeInsets.all(12.0);
 final _backgroundColor = Colors.blue[100];
 final _backgroundFieldCity = Colors.blue[300];
 final _backgroundFieldCoords = Colors.blue[200];
 final _backgroundColorAppBar = Colors.blue[900];
+
 //List of possible days (possibility of adding days up to 16)
 final List<int> listDays = <int>[1,3,7,10,14];
+
 void main() {
   final repo = WeatherRepo(client: http.Client());
   final modelCommand = ModelCommand(repo);
+  enableFlutterDriverExtension();
+
   runApp(
     ModelProvider(
       child: MyApp(),
