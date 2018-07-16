@@ -5,6 +5,8 @@ import 'package:flutter_driver/flutter_driver.dart';
 import 'package:test/test.dart';
 
 void main() {
+  /*
+  //Example
   group('scrolling performance test', () {
     FlutterDriver driver;
 
@@ -57,4 +59,5 @@ void main() {
       summary.writeTimelineToFile('scrolling_performance', pretty: true);
     });
   });
+  */
 }

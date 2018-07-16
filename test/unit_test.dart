@@ -1,8 +1,8 @@
 import 'package:test/test.dart';
+import 'package:weather_app/main.dart';
 
 void main() {
   test('my first unit test', () {
-    var answer = 42;
-    expect(answer, 42);
+    expect(calc(6), 12);
   });
 }

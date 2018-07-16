@@ -26,14 +26,19 @@ final _backgroundColor = Colors.blue[100];
 final _backgroundFieldCity = Colors.blue[300];
 final _backgroundFieldCoords = Colors.blue[200];
 final _backgroundColorAppBar = Colors.blue[900];
+final TextEditingController _controller = new TextEditingController();
 
 //List of possible days (possibility of adding days up to 16)
 final List<int> listDays = <int>[1,3,7,10,14];
 
+int calc(int num){
+  return num*2;
+}
+
 void main() {
   final repo = WeatherRepo(client: http.Client());
   final modelCommand = ModelCommand(repo);
-  enableFlutterDriverExtension();
+  //enableFlutterDriverExtension();
 
   runApp(
     ModelProvider(
@@ -171,7 +176,7 @@ void _navigateToWeatherCoords(BuildContext context){
 }
 
   @override
-  Widget build(BuildContext context) {
+   Widget build(BuildContext context) {
     //Home page
     return new Scaffold(
 
@@ -424,6 +429,7 @@ class SliderItem extends StatefulWidget{
   @override
   SliderState createState() => SliderState(sliderState,command);
 }
+
 class SliderState extends State<SliderItem>{
   bool sliderState;
   ValueChanged<bool> command;
