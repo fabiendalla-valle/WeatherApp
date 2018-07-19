@@ -153,17 +153,60 @@ class WeatherRepo{
       }
     return req;
   }
+  Future<List<WeatherModel>> updateWeatherGeo(LocationResult result) async{
 
-  //Unuse
-  Future<LocationResult> updateLocation() async{
-    Future<LocationResult> result = Geolocation.lastKnownLocation();
-    return result;
+    String url;
+    List<WeatherModel> req;
+    //Future<LocationResult> result1 = updateLocation();
+    //We check that this is not the  first time we run update weather to avoid having data when we launch the application
+    print("start update weather geo");
+
+      //Set up to know how the user wants to search the weather
+      //print("search by geo, ${result.location.latitude}, ${result.location.longitude}, $day");
+    //print("$result1.toString()");
+    var result1 = Geolocation.locationUpdates(accuracy: LocationAccuracy.best, inBackground: false);
+    //x.listen((d) => print(d.isSuccessful));
+
+      if (result!=null) {
+      //search by coordinates
+      print("search by geo, ${result.location.latitude}, ${result.location.longitude}, $day");
+      url = 'http://api.openweathermap.org/data/2.5/forecast?lat=${result.location.latitude}&lon=${result.location.longitude}&cnt=$day&APPID=cd276716fd9cc04be3e53bac3b30af26';
+      }else{
+        print("result null");
+        url = 'http://api.openweathermap.org/data/2.5/forecast?lat=50&lon=50&cnt=$day&APPID=cd276716fd9cc04be3e53bac3b30af26';
+        //default research
+        //req=null;
+        //return req;
+      }
+
+      final response = await client.get(url);
+
+      req = BaseResponse
+          .fromJson(json.decode(response.body))
+      //.cities
+          .jours
+          .map((jour) => WeatherModel.fromResponse(jour))
+          .toList();
+      //Unit change based on radioButton
+      if (!fahrenheit) {
+        //If the boolean fahrenheit is zero, Convert to degree for all items in the list
+        for (int i = 0; i < req.length; i++) {
+
+          req[i].temperature = (req[i].temperature - 32)*(5 / 9);
+        }
+      }
+    return req;
   }
 
-  //Unuse
-  Future<bool> getGps() async{
-    final GeolocationResult result = await Geolocation.isLocationOperational();
-    if(result.isSuccessful)
+  Stream<LocationResult> updateLocationStream(dynamic item) {
+    Stream<LocationResult> stream = Geolocation.currentLocation(
+        accuracy: LocationAccuracy.best, inBackground: false);
+    return stream;
+  }
+
+  Future<bool> getGps() async {
+    final GeolocationResult result = await Geolocation.requestLocationPermission(const LocationPermission(android:LocationPermissionAndroid.fine));
+    if (result.isSuccessful)
       return true;
     else
       return false;

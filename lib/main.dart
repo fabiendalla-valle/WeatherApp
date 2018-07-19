@@ -12,6 +12,9 @@ import 'package:weather_app/model/model.dart';
 import 'package:weather_app/model/model_provider.dart';
 import 'package:rx_widgets/rx_widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:geolocation/geolocation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'dart:async';
 
 String _title="";
 String _titleCoords="";
@@ -19,6 +22,7 @@ String _city="";
 String _country="";
 String _lat="";
 String _lon="";
+String _titleGeo="Geo";
 
 //SHORTCUT TO CHANGE PARAMETERS EASILY
 const _padding = EdgeInsets.all(12.0);
@@ -26,7 +30,6 @@ final _backgroundColor = Colors.blue[100];
 final _backgroundFieldCity = Colors.blue[300];
 final _backgroundFieldCoords = Colors.blue[200];
 final _backgroundColorAppBar = Colors.blue[900];
-final TextEditingController _controller = new TextEditingController();
 
 //List of possible days (possibility of adding days up to 16)
 final List<int> listDays = <int>[1,3,7,10,14];
@@ -90,6 +93,44 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => new _MyHomePageState();
 }
 class _MyHomePageState extends State<MyHomePage> {
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+  @override
+  void initState(){
+    /*
+    var x = Geolocation.locationUpdates(accuracy: LocationAccuracy.best, inBackground: false);
+    x.listen((d) => print(d.isSuccessful));
+    */
+    //super.initState();
+    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+    var android = new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var iOS = new IOSInitializationSettings();
+    var initSetttings = new InitializationSettings(android, iOS);
+    flutterLocalNotificationsPlugin.initialize(initSetttings, selectNotification: onSelectNotification);
+  }
+
+  Future onSelectNotification(String payload) {
+    debugPrint("payload : $payload");
+    showDialog(
+      context: context,
+      builder: (_) => new AlertDialog(
+        title: new Text('Notification'),
+        content: new Text('$payload'),
+      ),
+    );
+  }
+
+  showNotification() async {
+    var android = new AndroidNotificationDetails(
+        'channel id', 'channel NAME', 'CHANNEL DESCRIPTION',
+        priority: Priority.High,importance: Importance.Max
+    );
+    var iOS = new IOSNotificationDetails();
+    var platform = new NotificationDetails(android, iOS);
+    await flutterLocalNotificationsPlugin.show(
+        0, 'News', 'Flutter', platform,
+        payload: 'Lets go');
+  }
 
   //Second screen for city search result
   void _navigateToWeather(BuildContext context){
@@ -132,7 +173,6 @@ class _MyHomePageState extends State<MyHomePage> {
       },
   ));
   }
-
 //Second screen for coordinates search result
 void _navigateToWeatherCoords(BuildContext context){
     ModelProvider.of(context).updateWeatherCommandCoords.call();
@@ -174,9 +214,52 @@ void _navigateToWeatherCoords(BuildContext context){
       },
   ));
 }
-
+//Second screen for geolocation search result
+void _navigateToWeatherGeo(BuildContext context){
+    ModelProvider.of(context).updateLocationStreamCommand.call();
+    ModelProvider.of(context).updateWeatherCommandGeo.call();
+    print("avant affichage $_titleGeo");
+    Navigator.of(context).push(MaterialPageRoute<Null>(
+      builder: (BuildContext context) {
+        return new Scaffold(
+          appBar: AppBar(
+            elevation: 1.0,
+            title: Text(
+              "$_titleGeo",
+              //style: Theme.of(context).textTheme.display1,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 30.0,
+              ),
+            ),
+            centerTitle: true,
+            backgroundColor: _backgroundColorAppBar,
+          ),
+          body: Container(
+           color: _backgroundColor,
+           child: Column(
+            children:<Widget>[
+                Expanded(
+                child: RxLoader<List<WeatherModel>>(
+                  radius: 30.0,
+                  commandResults: ModelProvider.of(context).updateWeatherCommandGeo,
+                  dataBuilder: (context,data)=>WeatherList(data),
+                  placeHolderBuilder: (context)=>Center(child: Text("Please enter a latitude and a longitude")),
+                  errorBuilder: (context,exception)=>Center(child: Text("Please enter valid coordinates")),
+                  //errorBuilder: (context,exception)=>Center(child: Text("$exception")),
+                ),
+              ),
+            ],
+          )
+          ),
+          );
+      },
+  ));
+}
   @override
    Widget build(BuildContext context) {
+    ModelProvider.of(context).getGpsCommand.call();
+
     //Home page
     return new Scaffold(
 
@@ -186,6 +269,25 @@ void _navigateToWeatherCoords(BuildContext context){
         title: new Text('What the weather like ?'),
         backgroundColor: _backgroundColorAppBar,
         actions: <Widget>[
+          Center(
+            child:RxLoader<bool>(
+              commandResults: ModelProvider.of(context).getGpsCommand,
+              dataBuilder: (context, data) => Row(
+                children: <Widget>[
+                  Text(data ? "GPS is Active" : "GPS is Inactive"),
+                  // Added logic to change the Icon when GPS is inactive.
+                  IconButton(
+                    icon: Icon(
+                        data ? Icons.gps_fixed : Icons.gps_not_fixed),
+                        onPressed: ModelProvider.of(context).getGpsCommand,
+                  ),
+                ],
+              ),
+              placeHolderBuilder: (context) => Text("$context"),
+              errorBuilder: (context, exception) => Text("$exception"),
+            ),
+
+          ),
 
           PopupMenuButton<int>(
             padding: EdgeInsets.all(1.0),
@@ -207,12 +309,12 @@ void _navigateToWeatherCoords(BuildContext context){
           )
         ],
       ),
+
       resizeToAvoidBottomPadding: false,
 
       body: Container(
         color: _backgroundColor,
-        child: Column(
-        
+        child: ListView(
         children: <Widget>[
 
           //City search group
@@ -269,7 +371,7 @@ void _navigateToWeatherCoords(BuildContext context){
                     child: WidgetSelector(
                     buildEvents: ModelProvider
                         .of(context)
-                        .updateLocationCommand
+                        .updateWeatherCommand
                         .canExecute,
                     onTrue: MaterialButton(
                       color: Colors.lightBlue,
@@ -341,7 +443,7 @@ void _navigateToWeatherCoords(BuildContext context){
 
             new Center(
                     child: WidgetSelector(
-                    buildEvents: ModelProvider.of(context).updateLocationCommand.canExecute,
+                    buildEvents: ModelProvider.of(context).updateWeatherCommandCoords.canExecute,
                     onTrue: MaterialButton(
                       color: Colors.lightBlue[300],
                       textColor: Colors.white,
@@ -372,20 +474,46 @@ void _navigateToWeatherCoords(BuildContext context){
                   children: <Widget>[
                     Container(
                       padding: EdgeInsets.all(7.0),
-                      child:  Text("  F° ", style: TextStyle(color: Colors.lightBlue[900],fontSize: 30.0,),),
+                      child:  Text("°F  ", style: TextStyle(color: Colors.lightBlue[900],fontSize: 30.0,),),
                     ),
                     SliderItem(true,ModelProvider.of(context).radioCheckedCommand
                     ),
                     Container(
                       padding: EdgeInsets.all(5.0),
-                      child:  Text("  C° ", style: TextStyle(color: Colors.blue[900],fontSize: 30.0,),),
+                      child:  Text(" °C ", style: TextStyle(color: Colors.blue[900],fontSize: 30.0,),),
                     )
                   ],
                 )
             ),
+        ),
+
+        //Geolocation group
+        Padding(
+          padding: EdgeInsets.all(20.0) ,
+          child: Center(
+                child:WidgetSelector(
+                    buildEvents: ModelProvider.of(context).updateWeatherCommandGeo.canExecute,
+                    onTrue: MaterialButton(
+                      color: Colors.lightBlue[300],
+                      textColor: Colors.white,
+                      child: Icon(Icons.gps_fixed,size: 40.0),
+                      onPressed:(){
+                        initState();
+                        showNotification();
+                        _navigateToWeatherGeo(context);
+                      }
+                    ),
+                    onFalse: MaterialButton(
+                      color: Colors.grey,
+                      child: Icon(Icons.gps_off,size: 40.0),
+                      onPressed: null,
+                    ),
+                  ),
+            ),
         )
+
         ],
-      ),
+        ),
       )
     );
   }
