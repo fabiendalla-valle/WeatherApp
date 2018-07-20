@@ -16,8 +16,8 @@ class ModelCommand{
 
  // final RxCommand<Null,LocationResult> updateLocationCommand;
   final RxCommand<dynamic, LocationResult> updateLocationStreamCommand;
-  final RxCommand<LocationResult, List<WeatherModel>> updateWeatherCommand;
 
+  final RxCommand<LocationResult, List<WeatherModel>> updateWeatherCommand;
   final RxCommand<LocationResult, List<WeatherModel>> updateWeatherCommandCoords;
   final RxCommand<LocationResult, List<WeatherModel>> updateWeatherCommandGeo;
 

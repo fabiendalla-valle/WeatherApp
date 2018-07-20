@@ -4,7 +4,6 @@
  * file : main.dart
  */
 // This line imports the extension
-import 'package:flutter_driver/driver_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:weather_app/model/weather_repo.dart';
 import 'package:weather_app/model/model_command.dart';
@@ -12,7 +11,6 @@ import 'package:weather_app/model/model.dart';
 import 'package:weather_app/model/model_provider.dart';
 import 'package:rx_widgets/rx_widgets.dart';
 import 'package:http/http.dart' as http;
-import 'package:geolocation/geolocation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
 
@@ -22,7 +20,7 @@ String _city="";
 String _country="";
 String _lat="";
 String _lon="";
-String _titleGeo="Geo";
+String _titleGeo="Where you are";
 
 //SHORTCUT TO CHANGE PARAMETERS EASILY
 const _padding = EdgeInsets.all(12.0);
@@ -41,6 +39,7 @@ int calc(int num){
 void main() {
   final repo = WeatherRepo(client: http.Client());
   final modelCommand = ModelCommand(repo);
+  //final weather = WeatherRepo(repo);
   //enableFlutterDriverExtension();
 
   runApp(
@@ -109,18 +108,18 @@ class _MyHomePageState extends State<MyHomePage> {
     flutterLocalNotificationsPlugin.initialize(initSetttings, selectNotification: onSelectNotification);
   }
 
-  Future onSelectNotification(String payload) {
+ Future onSelectNotification(String payload) {
     debugPrint("payload : $payload");
     showDialog(
       context: context,
       builder: (_) => new AlertDialog(
-        title: new Text('Notification'),
+        title: new Text('Weather Tomorrow'),
         content: new Text('$payload'),
       ),
     );
   }
 
-  showNotification() async {
+  showNotification(String forecast,String temperature) async {
     var android = new AndroidNotificationDetails(
         'channel id', 'channel NAME', 'CHANNEL DESCRIPTION',
         priority: Priority.High,importance: Importance.Max
@@ -128,8 +127,8 @@ class _MyHomePageState extends State<MyHomePage> {
     var iOS = new IOSNotificationDetails();
     var platform = new NotificationDetails(android, iOS);
     await flutterLocalNotificationsPlugin.show(
-        0, 'News', 'Flutter', platform,
-        payload: 'Lets go');
+        1, 'Weather', 'Tomorrow', platform,
+        payload: "$forecast  \t           $temperature");
   }
 
   //Second screen for city search result
@@ -216,9 +215,9 @@ void _navigateToWeatherCoords(BuildContext context){
 }
 //Second screen for geolocation search result
 void _navigateToWeatherGeo(BuildContext context){
-    ModelProvider.of(context).updateLocationStreamCommand.call();
-    ModelProvider.of(context).updateWeatherCommandGeo.call();
+
     print("avant affichage $_titleGeo");
+
     Navigator.of(context).push(MaterialPageRoute<Null>(
       builder: (BuildContext context) {
         return new Scaffold(
@@ -255,10 +254,32 @@ void _navigateToWeatherGeo(BuildContext context){
           );
       },
   ));
+    print("fin");
+
+
 }
   @override
    Widget build(BuildContext context) {
+    const oneSec = const Duration(seconds:1);
+    const thirtySec = const Duration(seconds:30);
+
+    ModelProvider.of(context).updateLocationStreamCommand.call();
+    ModelProvider.of(context).updateWeatherCommandGeo(ModelProvider.of(context).updateLocationStreamCommand.lastResult);
     ModelProvider.of(context).getGpsCommand.call();
+
+    new Timer.periodic(oneSec, (Timer t) =>
+        ModelProvider.of(context).updateLocationStreamCommand.call()
+    );
+    new Timer.periodic(oneSec, (Timer t) =>
+        print("${ModelProvider.of(context).updateLocationStreamCommand.lastResult}")
+    );
+    new Timer.periodic(thirtySec, (Timer t) =>
+        ModelProvider.of(context).updateWeatherCommandGeo(ModelProvider.of(context).updateLocationStreamCommand.lastResult)
+    );
+
+
+// Platform messages may fail, so we use a try/catch PlatformException.
+
 
     //Home page
     return new Scaffold(
@@ -466,7 +487,7 @@ void _navigateToWeatherGeo(BuildContext context){
         ),    
             
         //Unit group
-        Padding(
+        new Padding(
           padding: EdgeInsets.all(20.0) ,
           child: Center(
                 child:Row(
@@ -488,30 +509,27 @@ void _navigateToWeatherGeo(BuildContext context){
         ),
 
         //Geolocation group
-        Padding(
+        new Padding(
           padding: EdgeInsets.all(20.0) ,
           child: Center(
-                child:WidgetSelector(
-                    buildEvents: ModelProvider.of(context).updateWeatherCommandGeo.canExecute,
-                    onTrue: MaterialButton(
+                    child: MaterialButton(
                       color: Colors.lightBlue[300],
                       textColor: Colors.white,
                       child: Icon(Icons.gps_fixed,size: 40.0),
                       onPressed:(){
+
+                        ModelProvider.of(context).updateWeatherCommandGeo(ModelProvider.of(context).updateLocationStreamCommand.lastResult);
                         initState();
-                        showNotification();
+                        showNotification(ModelProvider.of(context).weatherRepo.notificationGeo,ModelProvider.of(context).weatherRepo.notificationTempGeo);
                         _navigateToWeatherGeo(context);
+                        //sleep(const Duration(seconds:10));
+                        //WeatherList test = WeatherList(ModelProvider.of(context).weatherRepo.updateWeatherGeoT().toString());
+                        //String teste=test.getList()[1].toString();
+                        //String teste=ModelProvider.of(context).weatherRepo.notification;
                       }
-                    ),
-                    onFalse: MaterialButton(
-                      color: Colors.grey,
-                      child: Icon(Icons.gps_off,size: 40.0),
-                      onPressed: null,
                     ),
                   ),
             ),
-        )
-
         ],
         ),
       )
@@ -523,9 +541,11 @@ void _navigateToWeatherGeo(BuildContext context){
 class WeatherList extends StatelessWidget{
   final List<WeatherModel> list;
   WeatherList(this.list);
+  List<WeatherModel> getList(){
+    return list;
+  }
   @override
   Widget build(BuildContext context) {
-
     return ListView.builder(
       itemCount: list.length,
       itemBuilder: (context,index)=>ListTile(
@@ -538,7 +558,7 @@ class WeatherList extends StatelessWidget{
         trailing: Container(
           child: Column(
             children: <Widget>[
-              Text(list[index].temperature.toInt().toString()),
+              Text(list[index].temperature.round().toString()),
             ],
           ),
         ),

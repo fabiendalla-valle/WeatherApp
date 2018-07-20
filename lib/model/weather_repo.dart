@@ -10,8 +10,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
 
 import 'package:geolocation/geolocation.dart';
+
+import 'package:weather_app/model/model.dart';
 
 import 'package:weather_app/json/response.dart';
 import 'package:weather_app/model/model.dart';
@@ -28,6 +31,8 @@ class WeatherRepo{
   String lon;
   bool fahrenheit = false;
   bool firstTime = true;
+  String notificationGeo="";
+  String notificationTempGeo="";
 
   WeatherRepo({this.client});
 
@@ -102,12 +107,9 @@ class WeatherRepo{
           .toList();
 
       //Unit change based on radioButton
-
       if (!fahrenheit) {
-
         //If the boolean fahrenheit is zero, Convert to degree for all items in the list
         for (int i = 0; i < req.length; i++) {
-
           req[i].temperature = (req[i].temperature - 32)*(5 / 9);
         }
       }
@@ -157,6 +159,7 @@ class WeatherRepo{
 
     String url;
     List<WeatherModel> req;
+
     //Future<LocationResult> result1 = updateLocation();
     //We check that this is not the  first time we run update weather to avoid having data when we launch the application
     print("start update weather geo");
@@ -164,7 +167,7 @@ class WeatherRepo{
       //Set up to know how the user wants to search the weather
       //print("search by geo, ${result.location.latitude}, ${result.location.longitude}, $day");
     //print("$result1.toString()");
-    var result1 = Geolocation.locationUpdates(accuracy: LocationAccuracy.best, inBackground: false);
+    //var result1 = Geolocation.locationUpdates(accuracy: LocationAccuracy.best, inBackground: false);
     //x.listen((d) => print(d.isSuccessful));
 
       if (result!=null) {
@@ -187,20 +190,25 @@ class WeatherRepo{
           .jours
           .map((jour) => WeatherModel.fromResponse(jour))
           .toList();
+
       //Unit change based on radioButton
       if (!fahrenheit) {
         //If the boolean fahrenheit is zero, Convert to degree for all items in the list
         for (int i = 0; i < req.length; i++) {
-
           req[i].temperature = (req[i].temperature - 32)*(5 / 9);
         }
       }
+
+    notificationGeo=req[0].description;
+    notificationTempGeo=req[0].temperature.round().toString();
+    print("$notificationGeo+$notificationTempGeo");
+
     return req;
   }
 
+
   Stream<LocationResult> updateLocationStream(dynamic item) {
-    Stream<LocationResult> stream = Geolocation.currentLocation(
-        accuracy: LocationAccuracy.best, inBackground: false);
+    Stream<LocationResult> stream = Geolocation.currentLocation(accuracy: LocationAccuracy.best, inBackground: false);
     return stream;
   }
 
