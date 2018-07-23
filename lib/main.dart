@@ -260,7 +260,7 @@ void _navigateToWeatherGeo(BuildContext context){
 }
   @override
    Widget build(BuildContext context) {
-    const oneSec = const Duration(seconds:1);
+    const oneSec = const Duration(seconds:15);
     const thirtySec = const Duration(seconds:30);
 
     ModelProvider.of(context).updateLocationStreamCommand.call();
