@@ -33,7 +33,10 @@ class WeatherRepo{
   bool firstTime = true;
   String notificationGeo="";
   String notificationTempGeo="";
-
+  String notificationCoords="";
+  String notificationTempCoords="";
+  String notification="";
+  String notificationTemp="";
   WeatherRepo({this.client});
 
   //Updates user input parameters
@@ -113,7 +116,10 @@ class WeatherRepo{
           req[i].temperature = (req[i].temperature - 32)*(5 / 9);
         }
       }
-    
+
+    notification=req[0].description;
+    notificationTemp=req[0].temperature.round().toString();
+
     return req;
   }
 
@@ -153,6 +159,10 @@ class WeatherRepo{
           req[i].temperature = (req[i].temperature - 32)*(5 / 9);
         }
       }
+
+    notificationCoords=req[0].description;
+    notificationTempCoords=req[0].temperature.round().toString();
+
     return req;
   }
   Future<List<WeatherModel>> updateWeatherGeo(LocationResult result) async{

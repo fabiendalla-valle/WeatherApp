@@ -104,8 +104,8 @@ class _MyHomePageState extends State<MyHomePage> {
     flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
     var android = new AndroidInitializationSettings('@mipmap/ic_launcher');
     var iOS = new IOSInitializationSettings();
-    var initSetttings = new InitializationSettings(android, iOS);
-    flutterLocalNotificationsPlugin.initialize(initSetttings, selectNotification: onSelectNotification);
+    var initSettings = new InitializationSettings(android, iOS);
+    flutterLocalNotificationsPlugin.initialize(initSettings, selectNotification: onSelectNotification);
   }
 
  Future onSelectNotification(String payload) {
@@ -266,6 +266,7 @@ void _navigateToWeatherGeo(BuildContext context){
     ModelProvider.of(context).updateLocationStreamCommand.call();
     ModelProvider.of(context).updateWeatherCommandGeo(ModelProvider.of(context).updateLocationStreamCommand.lastResult);
     ModelProvider.of(context).getGpsCommand.call();
+    initState();
 
     new Timer.periodic(oneSec, (Timer t) =>
         ModelProvider.of(context).updateLocationStreamCommand.call()
@@ -400,6 +401,8 @@ void _navigateToWeatherGeo(BuildContext context){
                       child: Icon(Icons.search,size: 40.0),
                       onPressed:(){
                         _navigateToWeather(context);
+                        showNotification(ModelProvider.of(context).weatherRepo.notification,ModelProvider.of(context).weatherRepo.notificationTemp);
+
                       }  
 
                     ),
@@ -471,6 +474,8 @@ void _navigateToWeatherGeo(BuildContext context){
                       child: Icon(Icons.search,size: 40.0),
                       onPressed:(){
                         _navigateToWeatherCoords(context);
+                        showNotification(ModelProvider.of(context).weatherRepo.notificationCoords,ModelProvider.of(context).weatherRepo.notificationTempCoords);
+
                       }
                     ),
                     onFalse: MaterialButton(
@@ -519,7 +524,6 @@ void _navigateToWeatherGeo(BuildContext context){
                       onPressed:(){
 
                         ModelProvider.of(context).updateWeatherCommandGeo(ModelProvider.of(context).updateLocationStreamCommand.lastResult);
-                        initState();
                         showNotification(ModelProvider.of(context).weatherRepo.notificationGeo,ModelProvider.of(context).weatherRepo.notificationTempGeo);
                         _navigateToWeatherGeo(context);
                         //sleep(const Duration(seconds:10));
