@@ -37,6 +37,7 @@ class WeatherRepo{
   String notificationTempCoords="";
   String notification="";
   String notificationTemp="";
+  String image="";
   WeatherRepo({this.client});
 
   //Updates user input parameters
@@ -186,10 +187,8 @@ class WeatherRepo{
       url = 'http://api.openweathermap.org/data/2.5/forecast?lat=${result.location.latitude}&lon=${result.location.longitude}&cnt=$day&APPID=cd276716fd9cc04be3e53bac3b30af26';
       }else{
         print("result null");
-        url = 'http://api.openweathermap.org/data/2.5/forecast?lat=50&lon=50&cnt=$day&APPID=cd276716fd9cc04be3e53bac3b30af26';
-        //default research
-        //req=null;
-        //return req;
+        req=null;
+        return req;
       }
 
       final response = await client.get(url);
@@ -209,6 +208,7 @@ class WeatherRepo{
         }
       }
 
+    image=req[0].icon;
     notificationGeo=req[0].description;
     notificationTempGeo=req[0].temperature.round().toString();
     print("$notificationGeo+$notificationTempGeo");

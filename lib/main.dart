@@ -3,6 +3,7 @@
  * Author : F. DALLA-VALLE
  * file : main.dart
  */
+
 // This line imports the extension
 import 'package:flutter/material.dart';
 import 'package:weather_app/model/weather_repo.dart';
@@ -13,6 +14,11 @@ import 'package:rx_widgets/rx_widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
+//import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:typed_data';
+//import to can use the sleep
+import 'dart:io';
+
 
 String _title="";
 String _titleCoords="";
@@ -32,6 +38,7 @@ final _backgroundColorAppBar = Colors.blue[900];
 //List of possible days (possibility of adding days up to 16)
 final List<int> listDays = <int>[1,3,7,10,14];
 
+//just to test the tests
 int calc(int num){
   return num*2;
 }
@@ -39,8 +46,6 @@ int calc(int num){
 void main() {
   final repo = WeatherRepo(client: http.Client());
   final modelCommand = ModelCommand(repo);
-  //final weather = WeatherRepo(repo);
-  //enableFlutterDriverExtension();
 
   runApp(
     ModelProvider(
@@ -93,21 +98,74 @@ class MyHomePage extends StatefulWidget {
 }
 class _MyHomePageState extends State<MyHomePage> {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  String textValue = "Test";
+  //FirebaseMessaging firebaseMessaging=new FirebaseMessaging();
 
   @override
   void initState(){
-    /*
-    var x = Geolocation.locationUpdates(accuracy: LocationAccuracy.best, inBackground: false);
-    x.listen((d) => print(d.isSuccessful));
-    */
+    //error when you uncomment
     //super.initState();
     flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+
+    var initializationSettingsAndroid = new AndroidInitializationSettings("app_icon");
+    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+    flutterLocalNotificationsPlugin.initialize(initializationSettings, selectNotification: onSelectNotification);
+
+    /*
     var android = new AndroidInitializationSettings('@mipmap/ic_launcher');
     var iOS = new IOSInitializationSettings();
     var initSettings = new InitializationSettings(android, iOS);
     flutterLocalNotificationsPlugin.initialize(initSettings, selectNotification: onSelectNotification);
+    */
+
+
+    //init firebase
+/*
+    firebaseMessaging.configure(
+      onLaunch:(Map<String,dynamic> msg){
+        print("launch");
+        textValue = "ok";
+
+      },
+      onMessage: (Map<String,dynamic> msg){
+        print("message");
+      },
+      onResume: (Map<String,dynamic> msg){
+        print("resume");
+      },
+
+    );
+
+    firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(
+          sound: true,
+          alert: true,
+          badge: true,
+        )
+    );
+
+    firebaseMessaging.onIosSettingsRegistered.listen((IosNotificationSettings setting){
+      print("IOS SET");
+    });
+
+    firebaseMessaging.getToken().then((token){
+      update(token);
+    });
+*/
+
   }
 
+  //for firebase only, unuse for now
+  void update(String token) {
+    print(token);
+    setState(() {
+      textValue = token;
+    });
+  }
+
+  //action when you click on the notification
  Future onSelectNotification(String payload) {
     debugPrint("payload : $payload");
     showDialog(
@@ -119,6 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  //display notif
   showNotification(String forecast,String temperature) async {
     var android = new AndroidNotificationDetails(
         'channel id', 'channel NAME', 'CHANNEL DESCRIPTION',
@@ -130,6 +189,85 @@ class _MyHomePageState extends State<MyHomePage> {
         1, 'Weather', 'Tomorrow', platform,
         payload: "$forecast  \t           $temperature");
   }
+
+  /// Schedules a notification, maybe unuse
+  _scheduleNotification(String forecast,String temperature) {
+    var scheduledNotificationDateTime =
+    new DateTime.now().add(new Duration(seconds: 20));
+    var vibrationPattern = new Int64List(4);
+    vibrationPattern[0] = 0;
+    vibrationPattern[1] = 1000;
+    vibrationPattern[2] = 5000;
+    vibrationPattern[3] = 2000;
+
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+        'your other channel id',
+        'your other channel name',
+        'your other channel description',
+        icon: 'app_icon',
+        //sound: 'slow_spring_board',
+        largeIcon: "p"+ModelProvider.of(context).weatherRepo.image ,
+        largeIconBitmapSource: BitmapSource.Drawable,
+        vibrationPattern: vibrationPattern,
+        color: const Color.fromARGB(255, 255, 0, 0));
+    var iOSPlatformChannelSpecifics =
+    new IOSNotificationDetails(sound: "slow_spring_board.aiff");
+    var platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    flutterLocalNotificationsPlugin.schedule(
+        0,
+        'Weather',
+        'Tomorrow',
+        scheduledNotificationDateTime,
+        platformChannelSpecifics,
+        payload: "$forecast  \t           $temperature"
+    );
+  }
+
+
+  // Daily notif, maybe unuse
+  _showDailyAtTime(String forecast,String temperature) {
+    var time = new Time(11, 40, 0);
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+        'repeatDailyAtTime channel id',
+        'repeatDailyAtTime channel name',
+        'repeatDailyAtTime description');
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    flutterLocalNotificationsPlugin.showDailyAtTime(
+        0,
+        'show daily title',
+        'Daily notification shown at approximately',
+        time,
+        platformChannelSpecifics,
+        payload: "$forecast  \t           $temperature"
+    );
+  }
+
+  //inifite repeat notif
+   _repeatNotification()  {
+
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+        'repeating channel id',
+        'repeating channel name',
+        'repeating description',
+      largeIcon: "p"+ModelProvider.of(context).weatherRepo.image ,
+
+    );
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+     flutterLocalNotificationsPlugin.periodicallyShow(0, 'Weather tomorrow',
+        'check the weather', RepeatInterval.EveryMinute, platformChannelSpecifics,
+     payload: "${ModelProvider.of(context).weatherRepo.notificationGeo}  \t           ${ModelProvider.of(context).weatherRepo.notificationTempGeo}"
+     );
+  }
+
+  _cancelAllNotifications()  {
+     flutterLocalNotificationsPlugin.cancelAll();
+  }
+
 
   //Second screen for city search result
   void _navigateToWeather(BuildContext context){
@@ -216,7 +354,7 @@ void _navigateToWeatherCoords(BuildContext context){
 //Second screen for geolocation search result
 void _navigateToWeatherGeo(BuildContext context){
 
-    print("avant affichage $_titleGeo");
+    print("Avant affichage $_titleGeo");
 
     Navigator.of(context).push(MaterialPageRoute<Null>(
       builder: (BuildContext context) {
@@ -258,29 +396,24 @@ void _navigateToWeatherGeo(BuildContext context){
 
 
 }
+
   @override
    Widget build(BuildContext context) {
-    const oneSec = const Duration(seconds:15);
-    const thirtySec = const Duration(seconds:30);
+
 
     ModelProvider.of(context).updateLocationStreamCommand.call();
     ModelProvider.of(context).updateWeatherCommandGeo(ModelProvider.of(context).updateLocationStreamCommand.lastResult);
+
     ModelProvider.of(context).getGpsCommand.call();
     initState();
 
-    new Timer.periodic(oneSec, (Timer t) =>
-        ModelProvider.of(context).updateLocationStreamCommand.call()
-    );
-    new Timer.periodic(oneSec, (Timer t) =>
-        print("${ModelProvider.of(context).updateLocationStreamCommand.lastResult}")
-    );
+/*
     new Timer.periodic(thirtySec, (Timer t) =>
-        ModelProvider.of(context).updateWeatherCommandGeo(ModelProvider.of(context).updateLocationStreamCommand.lastResult)
+        showNotification("moulay", "moulay")
     );
-
+*/
 
 // Platform messages may fail, so we use a try/catch PlatformException.
-
 
     //Home page
     return new Scaffold(
@@ -399,11 +532,15 @@ void _navigateToWeatherGeo(BuildContext context){
                       color: Colors.lightBlue,
                       textColor: Colors.white,
                       child: Icon(Icons.search,size: 40.0),
-                      onPressed:(){
-                        _navigateToWeather(context);
+                      onPressed:() async {
+                        await _navigateToWeather(context);
                         showNotification(ModelProvider.of(context).weatherRepo.notification,ModelProvider.of(context).weatherRepo.notificationTemp);
 
-                      }  
+                        _cancelAllNotifications();
+                        //_scheduleNotification(ModelProvider.of(context).weatherRepo.notificationGeo, ModelProvider.of(context).weatherRepo.notificationTempGeo);
+                        //_showDailyAtTime(ModelProvider.of(context).weatherRepo.notificationGeo, ModelProvider.of(context).weatherRepo.notificationTempGeo);
+                        _repeatNotification();
+                      }
 
                     ),
                     onFalse: MaterialButton(
@@ -476,6 +613,10 @@ void _navigateToWeatherGeo(BuildContext context){
                         _navigateToWeatherCoords(context);
                         showNotification(ModelProvider.of(context).weatherRepo.notificationCoords,ModelProvider.of(context).weatherRepo.notificationTempCoords);
 
+                        _cancelAllNotifications();
+                        //_scheduleNotification(ModelProvider.of(context).weatherRepo.notificationGeo, ModelProvider.of(context).weatherRepo.notificationTempGeo);
+                        //_showDailyAtTime(ModelProvider.of(context).weatherRepo.notificationGeo, ModelProvider.of(context).weatherRepo.notificationTempGeo);
+                        _repeatNotification();
                       }
                     ),
                     onFalse: MaterialButton(
@@ -521,12 +662,22 @@ void _navigateToWeatherGeo(BuildContext context){
                       color: Colors.lightBlue[300],
                       textColor: Colors.white,
                       child: Icon(Icons.gps_fixed,size: 40.0),
-                      onPressed:(){
+                      onPressed:() async{
+                        await ModelProvider.of(context).updateLocationStreamCommand;
+                        await ModelProvider.of(context).updateWeatherCommandGeo(ModelProvider.of(context).updateLocationStreamCommand.lastResult);
 
-                        ModelProvider.of(context).updateWeatherCommandGeo(ModelProvider.of(context).updateLocationStreamCommand.lastResult);
+                        //sleep(const Duration(seconds:10));
+
                         showNotification(ModelProvider.of(context).weatherRepo.notificationGeo,ModelProvider.of(context).weatherRepo.notificationTempGeo);
                         _navigateToWeatherGeo(context);
-                        //sleep(const Duration(seconds:10));
+
+                         _cancelAllNotifications();
+                        //_scheduleNotification(ModelProvider.of(context).weatherRepo.notificationGeo, ModelProvider.of(context).weatherRepo.notificationTempGeo);
+                        //_showDailyAtTime(ModelProvider.of(context).weatherRepo.notificationGeo, ModelProvider.of(context).weatherRepo.notificationTempGeo);
+                         _repeatNotification();
+
+                         //tests
+                        //showScheduleNotification("test", "test");
                         //WeatherList test = WeatherList(ModelProvider.of(context).weatherRepo.updateWeatherGeoT().toString());
                         //String teste=test.getList()[1].toString();
                         //String teste=ModelProvider.of(context).weatherRepo.notification;
