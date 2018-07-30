@@ -201,17 +201,17 @@ class _MyHomePageState extends State<MyHomePage> {
     vibrationPattern[3] = 2000;
 
     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-        'your other channel id',
-        'your other channel name',
-        'your other channel description',
+        'channel id',
+        'channel name',
+        'channel description',
         icon: 'app_icon',
         //sound: 'slow_spring_board',
+        //add a p, because cant begin with a number
         largeIcon: "p${ModelProvider.of(context).weatherRepo.image}" ,
         largeIconBitmapSource: BitmapSource.Drawable,
         vibrationPattern: vibrationPattern,
         color: const Color.fromARGB(255, 255, 0, 0));
-    var iOSPlatformChannelSpecifics =
-    new IOSNotificationDetails(sound: "slow_spring_board.aiff");
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails(sound: "slow_spring_board.aiff");
     var platformChannelSpecifics = new NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
     flutterLocalNotificationsPlugin.schedule(
@@ -256,9 +256,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
     );*/
      var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-         'your other channel id',
-         'your other channel name',
-         'your other channel description',
+         'channel id',
+         'channel name',
+         'channel description',
          icon: 'app_icon',
          //sound: 'slow_spring_board',
          largeIcon: "p"+ModelProvider.of(context).weatherRepo.image ,
@@ -323,7 +323,7 @@ class _MyHomePageState extends State<MyHomePage> {
 //Second screen for coordinates search result
 void _navigateToWeatherCoords(BuildContext context){
     ModelProvider.of(context).updateWeatherCommandCoords.call();
-    print("avant affichage $_titleCoords");
+    print("Avant affichage $_titleCoords");
     Navigator.of(context).push(MaterialPageRoute<Null>(
       builder: (BuildContext context) {
         return new Scaffold(
@@ -623,7 +623,7 @@ void _navigateToWeatherGeo(BuildContext context){
                         _navigateToWeatherCoords(context);
                         showNotification(ModelProvider.of(context).weatherRepo.notificationCoords,ModelProvider.of(context).weatherRepo.notificationTempCoords);
 
-                        _cancelAllNotifications();
+                        _cancelAllNotifications(); // cancel notifications because you cant add again and again notifications
                         //_scheduleNotification(ModelProvider.of(context).weatherRepo.notificationGeo, ModelProvider.of(context).weatherRepo.notificationTempGeo);
                         //_showDailyAtTime(ModelProvider.of(context).weatherRepo.notificationGeo, ModelProvider.of(context).weatherRepo.notificationTempGeo);
                         _repeatNotification();
