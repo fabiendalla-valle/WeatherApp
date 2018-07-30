@@ -4,10 +4,12 @@
 
 You can search the weather with the name of the city, or with coordinates. 
 You can choose degrees Celsius or degrees Fahrenheit for your results, and also the number of days you want.
+This app allows to get notifications for the weather, where you are, each day.
 
 ## Display
 <img src='HomePage.png' width='350'>
 <img src='ResultScreen.png' width='350'>
+<img src='NotifScreen.png' width='350'>
 
 ## IMPROVEMENTS :
 * Weather by geolocation
