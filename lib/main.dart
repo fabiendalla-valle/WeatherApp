@@ -206,7 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
         'your other channel description',
         icon: 'app_icon',
         //sound: 'slow_spring_board',
-        largeIcon: "p"+ModelProvider.of(context).weatherRepo.image ,
+        largeIcon: "p${ModelProvider.of(context).weatherRepo.image}" ,
         largeIconBitmapSource: BitmapSource.Drawable,
         vibrationPattern: vibrationPattern,
         color: const Color.fromARGB(255, 255, 0, 0));
@@ -247,14 +247,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //inifite repeat notif
    _repeatNotification()  {
-
+/*
     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
         'repeating channel id',
         'repeating channel name',
         'repeating description',
       largeIcon: "p"+ModelProvider.of(context).weatherRepo.image ,
 
-    );
+    );*/
+     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+         'your other channel id',
+         'your other channel name',
+         'your other channel description',
+         icon: 'app_icon',
+         //sound: 'slow_spring_board',
+         largeIcon: "p"+ModelProvider.of(context).weatherRepo.image ,
+         largeIconBitmapSource: BitmapSource.Drawable,
+         color: const Color.fromARGB(255, 255, 0, 0));
+
     var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
     var platformChannelSpecifics = new NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
