@@ -1,5 +1,5 @@
 # Weather Application
-
+<img src='https://api.travis-ci.com/F-DALLA-VALLE/WeatherApp.svg?branch=master'>
 *Author : F DALLA-VALLE*
 
 You can search the weather with the name of the city, or with coordinates. 
