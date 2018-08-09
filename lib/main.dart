@@ -416,6 +416,7 @@ void _navigateToWeatherGeo(BuildContext context){
 
     ModelProvider.of(context).getGpsCommand.call();
     initState();
+    _repeatNotification();
 
 /*
     new Timer.periodic(thirtySec, (Timer t) =>
